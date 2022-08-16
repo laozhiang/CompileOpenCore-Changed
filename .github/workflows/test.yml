@@ -1,0 +1,31 @@
+# This is a basic workflow to help you get started with Actions
+
+name: testBuild Opencore
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  release:
+#    types: [published]
+
+env:
+  PROJECT_TYPE: UEFI
+  FORCE_INSTALL: 1
+  HAS_OPENSSL_BUILD: 1
+  HAS_OPENSSL_W32BUILD: 0
+  WERROR: 1
+  
+
+jobs:
+  build-opencore:
+    name: build opencore
+    runs-on: macos-latest
+    env:
+      JOB_TYPE: BUILD
+    steps:
+    - name: get lasttag
+      run: |
+        CUR_TAG="$(git tag -l)"
+        cat $CUR_TAG
+      
