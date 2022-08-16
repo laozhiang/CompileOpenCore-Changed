@@ -19,27 +19,61 @@ jobs:
     env:
       JOB_TYPE: BUILD
     steps:
-    - name: get version
-      if: github.event_name == 'release'
-      run: |
-        OPENCORE_VER=$(echo ${{ github.ref }} | sed "s/.*\/[^-]*-//g")
-        echo "OPENCORE_VER=$OPENCORE_VER" >> $GITHUB_ENV
+      - name: get version
+        if: github.event_name == 'release'
+        run: |
+          OPENCORE_VER=$(echo ${{ github.ref }} | sed "s/.*\/[^-]*-//g")
+          echo "OPENCORE_VER=$OPENCORE_VER" >> $GITHUB_ENV
 
-    - name: Clone Opencore Code
-      uses: actions/checkout@v3
-      with:
+      - name: Clone Opencore Code
+        uses: actions/checkout@v3
+        with:
           repository: acidanthera/OpenCorePkg
           ref: ${{ env.OPENCORE_VER }}
+     
+      - name: change Opencore
+        run: |
+          sed -i .bak "s/L\"EFI\\\\\\\\OC\"/L\"EFI\\\\\\\\OC\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h
+          sed -i .bak "s/L\"OpenCore.efi\"/L\"OpenCore.efi\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h
+          sed -i .bak "s/L\"config.plist\"/L\"config.plist\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h      
+      
+      - name: check change Opencore
+        run: cat Include/Acidanthera/Library/OcMainLib.h
     
-#    - name: get lasttag
-#      if: github.event_name != 'release'
-#      run: echo not run from release  
-      
-    - name: change Opencore
-      run: |
-        sed -i .bak "s/L\"EFI\\\\\\\\OC\"/L\"EFI\\\\\\\\OC\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h
-        sed -i .bak "s/L\"OpenCore.efi\"/L\"OpenCore.efi\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h
-        sed -i .bak "s/L\"config.plist\"/L\"config.plist\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h      
-      
-    - name: check change Opencore
-      run: cat Include/Acidanthera/Library/OcMainLib.h
+      - name: Add Linux Toolchain
+        run: brew tap FiloSottile/homebrew-musl-cross
+
+      - name: Install Linux Toolchain
+        run: brew install musl-cross
+        env:
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_AUTO_UPDATE: 1
+
+      - name: Install Dependencies
+        run: brew install openssl mingw-w64
+        env:
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_AUTO_UPDATE: 1
+
+      - name: CI Bootstrap
+        run: |
+          src=$(/usr/bin/curl -Lfs https://raw.githubusercontent.com/acidanthera/ocbuild/master/ci-bootstrap.sh) && eval "$src" || exit 1
+      - run: ./build_duet.tool
+      - run: ./build_oc.tool
+
+      - name: Upload to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: macOS XCODE5 Artifacts
+          path: Binaries/*.zip
+
+      - name: Upload to Release
+        if: github.event_name == 'release'
+        uses: svenstaro/upload-release-action@e74ff71f7d8a4c4745b560a485cc5fdb9b5b999d
+        with:
+          prerelease: true 
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: Binaries/*.zip
+          tag: ${{ github.ref }}
+          file_glob: true
+          
