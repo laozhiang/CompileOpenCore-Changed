@@ -47,10 +47,11 @@ jobs:
         with:
           path: opencore-laozhiang
 
-      - uses: baileyjm02/markdown-to-pdf@v1
+
+      - name: Convert Markdown to HTML
+        uses: natescherer/markdown-to-html-with-github-style-action@v1
         with:
-          input_path: opencore-laozhiang/README.md
-          output_dir: opencore-laozhiang
-          image_import: ./
+          path: opencore-laozhiang/README.md
+          outputpath: opencore-laozhiang/ChangeOpenCore
     
-      - run: cat opencore-laozhiang/README.html
+      - run: cat opencore-laozhiang/opencore-laozhiang/ChangeOpenCore/README.html
