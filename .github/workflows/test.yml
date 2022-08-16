@@ -27,6 +27,6 @@ jobs:
       run: cat ${{ github.ref }}
     
     - name: get lasttag
-      if: ! github.event_name == 'release'
+      if: github.event_name != 'release'
       run: echo not run from release  
       
