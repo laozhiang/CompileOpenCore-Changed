@@ -1,4 +1,4 @@
-name: testBuild Opencore
+name: Build Opencore
 
 on:
   workflow_dispatch:
@@ -47,4 +47,10 @@ jobs:
         with:
           path: opencore-laozhiang
 
-      - run: cat opencore-laozhiang/README.md
+      - uses: baileyjm02/markdown-to-pdf@v1
+        with:
+          input_path: opencore-laozhiang/README.md
+          output_dir: opencore-laozhiang
+          image_import: ./
+    
+      - run: cat opencore-laozhiang/README.html
