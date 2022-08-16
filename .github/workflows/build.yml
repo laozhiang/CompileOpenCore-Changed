@@ -27,11 +27,6 @@ jobs:
           
       - name: Clone Opencore Code
         uses: actions/checkout@v3
-
-      - run: cat README.md
-
-      - name: Clone Opencore Code
-        uses: actions/checkout@v3
         with:
           repository: acidanthera/OpenCorePkg
           ref: ${{ env.OPENCORE_VER }}
@@ -47,3 +42,9 @@ jobs:
           cat Include/Acidanthera/Library/OcMainLib.h
           cat README.md
     
+      - name: Clone Opencore Code
+        uses: actions/checkout@v3
+        with:
+          path: opencore-laozhiang
+
+      - run: cat opencore-laozhiang/README.md
