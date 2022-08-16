@@ -19,11 +19,27 @@ jobs:
     env:
       JOB_TYPE: BUILD
     steps:
-    - name: get tag
+    - name: get version
       if: github.event_name == 'release'
-      run: cat ${{ github.ref }}
+      run: |
+        OPENCORE_VER=$(echo ${{ github.ref }} | sed "s/.*\/[^-]*-//g")
+        echo "OPENCORE_VER=$OPENCORE_VER" >> $GITHUB_ENV
+
+    - name: Clone Opencore Code
+      uses: actions/checkout@v3
+      with:
+          repository: acidanthera/OpenCorePkg
+          ref: ${{ env.OPENCORE_VER }}
     
-    - name: get lasttag
-      if: github.event_name != 'release'
-      run: echo not run from release  
+#    - name: get lasttag
+#      if: github.event_name != 'release'
+#      run: echo not run from release  
       
+    - name: change Opencore
+      run: |
+        sed -i .bak "s/L\"EFI\\\\\\\\OC\"/L\"EFI\\\\\\\\OC\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h
+        sed -i .bak "s/L\"OpenCore.efi\"/L\"OpenCore.efi\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h
+        sed -i .bak "s/L\"config.plist\"/L\"config.plist\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h      
+      
+    - name: check change Opencore
+      run: cat Include/Acidanthera/Library/OcMainLib.h
