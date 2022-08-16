@@ -22,8 +22,11 @@ jobs:
     env:
       JOB_TYPE: BUILD
     steps:
+    - name: get tag
+      if: github.event_name == 'release'
+      run: cat ${{ github.ref }}
+    
     - name: get lasttag
-      run: |
-        CUR_TAG="$(git tag -l)"
-        cat $CUR_TAG
+      if: ! github.event_name == 'release'
+      run: echo not run from release  
       
