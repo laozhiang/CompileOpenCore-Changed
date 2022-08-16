@@ -1,0 +1,58 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+env:
+  PROJECT_TYPE: UEFI
+  FORCE_INSTALL: 1
+  HAS_OPENSSL_BUILD: 1
+  HAS_OPENSSL_W32BUILD: 0
+  WERROR: 1
+  
+
+jobs:
+  build-macos:
+    name: macOS XCODE5
+    runs-on: macos-latest
+    env:
+      JOB_TYPE: BUILD
+    steps:
+      - name: Clone Opencore Code
+        uses: actions/checkout@v3
+        with:
+          repository: acidanthera/OpenCorePkg
+
+        
+      - name: Add Linux Toolchain
+        run: brew tap FiloSottile/homebrew-musl-cross
+
+      - name: Install Linux Toolchain
+        run: brew install musl-cross
+        env:
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_AUTO_UPDATE: 1
+
+      - name: Install Dependencies
+        run: brew install openssl mingw-w64
+        env:
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+          HOMEBREW_NO_AUTO_UPDATE: 1
+
+      - name: CI Bootstrap
+        run: |
+          src=$(/usr/bin/curl -Lfs https://raw.githubusercontent.com/acidanthera/ocbuild/master/ci-bootstrap.sh) && eval "$src" || exit 1
+      - run: ./build_duet.tool
+      - run: ./build_oc.tool
+
+      - name: Upload to Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: macOS XCODE5 Artifacts
+          path: Binaries/*.zip
