@@ -5,7 +5,7 @@ name: testBuild Opencore
 on:
   workflow_dispatch:
   release:
-#    types: [published]
+    types: [published]
 
 env:
   PROJECT_TYPE: UEFI
