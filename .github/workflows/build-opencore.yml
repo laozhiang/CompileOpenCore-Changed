@@ -3,7 +3,7 @@
 name: Build Opencore
 
 on:
-  release:
+#  release:
 #    types: [published]
 
 env:
