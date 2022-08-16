@@ -3,6 +3,7 @@
 name: testBuild Opencore
 
 on:
+  workflow_dispatch:
   release:
 #    types: [published]
 
