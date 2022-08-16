@@ -54,4 +54,4 @@ jobs:
           path: opencore-laozhiang/README.md
           outputpath: opencore-laozhiang/ChangeOpenCore
     
-      - run: cat opencore-laozhiang/opencore-laozhiang/ChangeOpenCore/README.html
+      - run: cat opencore-laozhiang/ChangeOpenCore/README.html
