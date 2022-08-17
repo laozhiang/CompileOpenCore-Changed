@@ -3,7 +3,7 @@ name: Build Opencore
 on:
   workflow_dispatch:
   release:
-
+    types: [published]
 env:
   PROJECT_TYPE: UEFI
   FORCE_INSTALL: 1
@@ -36,7 +36,7 @@ jobs:
           sed -i .bak "s/L\"EFI\\\\\\\\OC\"/L\"EFI\\\\\\\\OC\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h
           sed -i .bak "s/L\"OpenCore.efi\"/L\"OpenCore.efi\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h
           sed -i .bak "s/L\"config.plist\"/L\"config.plist\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\\\\0\"/g" Include/Acidanthera/Library/OcMainLib.h      
-          sed -i .bak "s/\\\"OpenCore-\\\${ver}-\\\${2}.zip\\\"/\\\"OpenCore-\\\${ver}-\\\${2}(change_by_laozhiang).zip\\\"/" build_oc.tool
+          sed -i .bak "s/\\\"OpenCore-\\\${ver}-\\\${2}.zip\\\"/\\\"OpenCore-\\\${ver}-\\\${2}_change_by_laozhiang.zip\\\"/" build_oc.tool
       
       - name: check change Opencore
         run: |
@@ -85,7 +85,6 @@ jobs:
         if: github.event_name == 'release'
         uses: svenstaro/upload-release-action@e74ff71f7d8a4c4745b560a485cc5fdb9b5b999d
         with:
-          prerelease: true 
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: Binaries/*.zip
           tag: ${{ github.ref }}
